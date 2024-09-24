@@ -56,18 +56,18 @@ public class SocialMediaController {
         if(registeredAccount!=null){
             ctx.json(registeredAccount);
         }else{
-            ctx.status(200);
+            ctx.status(400);
         }
         
     }
 
     private void loginHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
         ObjectMapper om = new ObjectMapper();
-        Account account = om.readValue(ctx.body(), Account.class);
+        String acctStr = ctx.body();
+        Account account = om.readValue(acctStr, Account.class);
         Account loginAccount = as.login(account);
         if(loginAccount!=null){
-            ctx.json(om.writeValueAsString(loginAccount));
-            ctx.status(200);
+            ctx.json(loginAccount);
         }else{
             ctx.status(401);
         }

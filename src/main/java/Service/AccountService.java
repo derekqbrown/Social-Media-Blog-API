@@ -17,9 +17,10 @@ public class AccountService {
     }
 
     public Account registerAccount(Account account) {
-        if(account.getUsername().isEmpty() || account.getUsername().isBlank()){
+        if(account.getUsername().isEmpty() || account.getUsername().isBlank() || account.getPassword().length() < 4){
             return null;
         }
+
         List <Account> accounts = aDao.getAllAccounts();
         
         for (Account a : accounts){
@@ -35,9 +36,10 @@ public class AccountService {
     public Account login(Account account) {
         List <Account> accounts = aDao.getAllAccounts();
         for (Account a : accounts){
-            if (account.getUsername() == a.getUsername()){
-                if(account.getPassword() == a.getPassword()){
-                    return account;
+            
+            if (account.getUsername().equals(a.getUsername())){
+                if(account.getPassword().equals(a.getPassword())){
+                    return a;
                 }
             }
         }
