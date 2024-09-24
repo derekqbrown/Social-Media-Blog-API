@@ -37,36 +37,28 @@ public class SocialMediaController {
     public Javalin startAPI() {
         Javalin app = Javalin.create();
 
-        app.post("localhost:8080/register", this::registerHandler);
-        app.post("localhost:8080/login", this::loginHandler);
-        app.post("localhost:8080/messages", this::postMessageHandler);
-        app.get("localhost:8080/messages", this::getMessagesHandler);
-        app.get("localhost:8080/messages/{message_id}", this::getMessageByIdHandler);
-        app.delete("localhost:8080/delete/{message_id}", this::deleteHandler);
-        app.patch("localhost:8080/messages/{message_id}", this::patchMessageHandler);
-        app.get("localhost:8080/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
+        app.post("/register", this::registerHandler);
+        app.post("/login", this::loginHandler);
+        app.post("/messages", this::postMessageHandler);
+        app.get("/messages", this::getMessagesHandler);
+        app.get("/messages/{message_id}", this::getMessageByIdHandler);
+        app.delete("/delete/{message_id}", this::deleteHandler);
+        app.patch("/messages/{message_id}", this::patchMessageHandler);
+        app.get("/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
         return app;
     }
 
-    /**
-     * This is an example handler for an example endpoint.
-     * @param context The Javalin Context object manages information about both the HTTP request and response.
-     */
-    // private void exampleHandler(Context context) {
-    //     ObjectMapper om = new ObjectMapper();
-
-    //     context.json();
-    // }
-
     private void registerHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
         ObjectMapper om = new ObjectMapper();
-        Account account = om.readValue(ctx.body(), Account.class);
+        String acctStr = ctx.body();
+        Account account = om.readValue(acctStr, Account.class);
         Account registeredAccount = as.registerAccount(account);
         if(registeredAccount!=null){
-            ctx.json(om.writeValueAsString(registeredAccount));
+            ctx.json(registeredAccount);
         }else{
-            ctx.status(400);
+            ctx.status(200);
         }
+        
     }
 
     private void loginHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
@@ -75,6 +67,7 @@ public class SocialMediaController {
         Account loginAccount = as.login(account);
         if(loginAccount!=null){
             ctx.json(om.writeValueAsString(loginAccount));
+            ctx.status(200);
         }else{
             ctx.status(401);
         }
