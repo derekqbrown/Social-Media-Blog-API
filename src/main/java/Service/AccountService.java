@@ -3,17 +3,14 @@ package Service;
 import java.util.List;
 
 import DAO.AccountDAO;
-import DAO.MessageDAO;
 import Model.Account;
 
 
 public class AccountService {
     public AccountDAO aDao;
-    public MessageDAO mDao;
 
     public AccountService(){
         this.aDao = new AccountDAO();
-        this.mDao = new MessageDAO();
     }
 
     public Account registerAccount(Account account) {
@@ -47,12 +44,7 @@ public class AccountService {
     }
 
     public Account getAccountById(int account_id) {
-        List <Account> accounts = aDao.getAllAccounts();
-        for (Account a : accounts){
-            if (account_id == a.getAccount_id()){
-                return null;
-            }
-        }
+        
         return aDao.getAccountById(account_id);
     }
 

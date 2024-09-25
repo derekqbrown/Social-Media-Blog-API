@@ -42,7 +42,7 @@ public class SocialMediaController {
         app.post("/messages", this::postMessageHandler);
         app.get("/messages", this::getMessagesHandler);
         app.get("/messages/{message_id}", this::getMessageByIdHandler);
-        app.delete("/delete/{message_id}", this::deleteHandler);
+        app.delete("/messages/{message_id}", this::deleteHandler);
         app.patch("/messages/{message_id}", this::patchMessageHandler);
         app.get("/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
         return app;
@@ -75,7 +75,13 @@ public class SocialMediaController {
 
     private void postMessageHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
         ObjectMapper om = new ObjectMapper();
-        Message message = om.readValue(ctx.body(), Message.class);
+        String msgStr = ctx.body();
+        Message message = om.readValue(msgStr, Message.class);
+        Account account = as.getAccountById(message.getPosted_by());
+        if(account == null){
+            ctx.status(400);
+        }
+
         Message postedMessage = ms.postMessage(message);
         if(postedMessage!=null){
             ctx.json(om.writeValueAsString(postedMessage));
@@ -91,22 +97,24 @@ public class SocialMediaController {
     }
 
     private void getMessageByIdHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
-        ObjectMapper om = new ObjectMapper();
-        Message message = om.readValue(ctx.body(), Message.class);
-        Message retrievedMessage = ms.getMessageById(message);
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+
+        Message retrievedMessage = ms.getMessageById(id);
         if(retrievedMessage!=null){
-            ctx.json(om.writeValueAsString(retrievedMessage));
+            ctx.json(retrievedMessage);
         }else{
             ctx.status(200);
         }
     }
 
     private void deleteHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
-        ObjectMapper om = new ObjectMapper();
-        Message message = om.readValue(ctx.body(), Message.class);
-        Message deletedMessage = ms.deleteMessage(message);
-        if(deletedMessage!=null){
-            ctx.json(om.writeValueAsString(deletedMessage));
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = new Message();
+        message.setMessage_id(id);
+        message = ms.deleteMessage(id);
+       
+        if(message != null){
+            ctx.json(message);
         }else{
             ctx.status(200);
         }
@@ -114,33 +122,29 @@ public class SocialMediaController {
 
     private void patchMessageHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
         ObjectMapper om = new ObjectMapper();
-        Message message = om.readValue(ctx.body(), Message.class);
-
-        if(message.message_text.length() > 255 || message.message_text.length() < 1){
-            ctx.status(400);
-            return;
-        }
+        String msgStr = ctx.body();
+        Message message = om.readValue(msgStr, Message.class);
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        message.setMessage_id(id);
 
         Message updatedMessage = ms.updateMessage(message);
         if(updatedMessage!=null){
             ctx.json(om.writeValueAsString(updatedMessage));
-            ctx.status(200);
         }else{
             ctx.status(400);
         }
     }
 
     private void getMessagesByAccountHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
-        ObjectMapper om = new ObjectMapper();
-        Account account = om.readValue(ctx.body(), Account.class);
-        Account userAccount = as.getAccountById(account.account_id);
+        int id = Integer.parseInt(ctx.pathParam("account_id"));
+        
+        Account userAccount = as.getAccountById(id);
         List<Message> messagesByAccount = new ArrayList<>();
         if(userAccount!=null){
-            messagesByAccount = ms.getMessagesByAccount(account.account_id);
-            ctx.json(om.writeValueAsString(messagesByAccount));
+            messagesByAccount = ms.getMessagesByAccount(id);
+            
         }
-        
-        ctx.status(200);
+        ctx.json(messagesByAccount);
         
     }
 }
